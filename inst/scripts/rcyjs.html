@@ -2,26 +2,9 @@
 <html>
 <head>
    <title>RCyjs</title>
-   <script src="http://oncoscape.sttrcancer.org/oncoscape/js/jquery-2.1.1.js"></script>
-   <script src="http://oncoscape.sttrcancer.org/oncoscape/js/jquery-ui-1.11.2.min.js"></script>
-   <link   rel="stylesheet" href="http://oncoscape.sttrcancer.org/oncoscape/css/jquery-ui-1.11.2.css">
-   <script src="http://oncoscape.sttrcancer.org/oncoscape/js/cytoscape-2.4.5.min.js"></script>
-
-   <script src="http://oncoscape.sttrcancer.org/oncoscape/js/jquery.qtip.min.js"></script>
-   <link   rel="stylesheet" type="text/css", 
-           href="http://oncoscape.sttrcancer.org/oncoscape/css/jquery.qtip.min.css"></script>
-   <script src="http://oncoscape.sttrcancer.org/oncoscape/js/cytoscape-qtip.js"></script>
-
-   <script src="http://oncoscape.sttrcancer.org/oncoscape/js/arbor.js"></script>
-   <script src="http://oncoscape.sttrcancer.org/oncoscape/js/springy.js"></script>
-   <script src="http://oncoscape.sttrcancer.org/oncoscape/js/jquery.cytoscape.js-panzoom.js"></script>
-   <link   href="http://oncoscape.sttrcancer.org/oncoscape/css/jquery.cytoscape.js-panzoom.css" 
-           rel="stylesheet" 
-           type="text/css" />
-   <link   href="http://oncoscape.sttrcancer.org/oncoscape/fonts/font-awesome-4.0.3/css/font-awesome.css" 
-           rel="stylesheet" 
-           type="text/css" />
-   <script src="http://oncoscape.sttrcancer.org/oncoscape/js/BrowserViz-1.1.2.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+   <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+   <script src="https://cdn.rawgit.com/paul-shannon/CDN/master/js/BrowserViz.js"></script>
 
 <style>
 
@@ -185,7 +168,7 @@ function fitSelected(msg)
     status = "success";
     payload = "";
     }
-    
+
   hub.send({cmd: msg.callback, status: status, callback: "", payload: payload});
 
 
@@ -193,7 +176,7 @@ function fitSelected(msg)
 //----------------------------------------------------------------------------------------------------
 function setZoom(msg)
 {
-   var newFactor = msg.payload   
+   var newFactor = msg.payload
    var box = cy.extent();
    var center = {x: box.x1 + (box.w/2), y: box.y1 + (box.h/2)};
    cy.zoom({level: newFactor, position: center});
@@ -212,7 +195,7 @@ function getZoom(msg)
 //----------------------------------------------------------------------------------------------------
 function setBackgroundColor(msg)
 {
-   var newValue = msg.payload   
+   var newValue = msg.payload
    cyDiv.css({"background-color": newValue});
    hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
 
@@ -285,7 +268,7 @@ function setNodeSizeRule(msg)
 
      var selectorString = "node[" + controllingAttribute + lowerBoundOperator + minVal + "]" +
                               "[" + controllingAttribute + upperBoundOperator  + maxVal + "]";
-     var mappingString = "mapData(" + controllingAttribute + "," + minVal + "," + maxVal + 
+     var mappingString = "mapData(" + controllingAttribute + "," + minVal + "," + maxVal +
                                                            "," + minSize + "," + maxSize + ")";
 
      cy.style().selector(selectorString).css({width: mappingString});
@@ -366,7 +349,7 @@ function setNodeColorInterpolatingRule(msg)
 
      var selectorString = "node[" + controllingAttribute + lowerBoundOperator + minVal + "]" +
                               "[" + controllingAttribute + upperBoundOperator  + maxVal + "]";
-     var mappingString = "mapData(" + controllingAttribute + "," + minVal + "," + maxVal + 
+     var mappingString = "mapData(" + controllingAttribute + "," + minVal + "," + maxVal +
                                                            "," + startColor + "," + endColor + ")";
      console.log("selectorString: " + selectorString);
      console.log("mapping string: " + mappingString);
@@ -485,7 +468,7 @@ function setEdgeColorInterpolatingRule(msg)
 
      var selectorString = "edge[" + controllingAttribute + lowerBoundOperator + minVal + "]" +
                               "[" + controllingAttribute + upperBoundOperator  + maxVal + "]";
-     var mappingString = "mapData(" + controllingAttribute + "," + minVal + "," + maxVal + 
+     var mappingString = "mapData(" + controllingAttribute + "," + minVal + "," + maxVal +
                                                            "," + startColor + "," + endColor + ")";
      console.log("selectorString: " + selectorString);
      console.log("mapping string: " + mappingString);
@@ -762,11 +745,11 @@ function getPosition(msg)
    var nodesToSelect = cy.nodes(filterStrings.join());
 
    if(allNodes)
-      layout = JSON.stringify(cy.nodes().map(function(n){return{id: n.id(), 
+      layout = JSON.stringify(cy.nodes().map(function(n){return{id: n.id(),
                                                                 x: n.position().x,
                                                                 y: n.position().y}}));
    else{
-      layout = JSON.stringify(nodesToSelect.map(function(n){return{id: n.id(), 
+      layout = JSON.stringify(nodesToSelect.map(function(n){return{id: n.id(),
                                                                 x: n.position().x,
                                                                 y: n.position().y}}));
       } // else: subset of nodes specified
@@ -784,7 +767,7 @@ function setPosition(msg)
 
    console.log("calling setPosition map");
    positionObjects.map(function(e){
-       var tag="[id='" + e.id + "']"; 
+       var tag="[id='" + e.id + "']";
        cy.$(tag).position({x: e.x, y:e.y});
        });
 
@@ -1084,7 +1067,7 @@ function selectNodes(msg)
      filterStrings.push(s);
      } // for i
 
-   
+
    var nodesToSelect = cy.nodes(filterStrings.join());
    nodesToSelect.select()
 
@@ -1152,7 +1135,7 @@ function setGraph(msg)
    console.log("setGraph after createCytoscapeWindow");
    //cy.load(graph.elements)
    //cy.add(graph)
- 
+
    hub.send({cmd: msg.callback, status: "success", callback: "", payload: "got graph"});
 
 } // setGraph
@@ -1274,7 +1257,7 @@ function addGraph(msg)
 {
   console.log("=== entering addGraph");
   var network = JSON.parse(msg.payload);
-  console.log("adding graph of " + network.elements.nodes.length + " nodes and " 
+  console.log("adding graph of " + network.elements.nodes.length + " nodes and "
                                  + network.elements.edges.length + " edges.");
 
     // new nodes must have an explicit position
@@ -1315,8 +1298,8 @@ function httpSetStyle(msg)
 //----------------------------------------------------------------------------------------------------
 function getVizmapNames()
 {
-   var names = []; 
- 
+   var names = [];
+
    if(typeof(vizmaps) == "object") {
       for(var i=0; i < vizmaps.length; i++){
         names.push(vizmaps[i].title);
@@ -1462,7 +1445,7 @@ function qtipOptions()
   return(options);
 
 } // qtipOptions
-//----------------------------------------------------------------------------------------------------            
+//----------------------------------------------------------------------------------------------------
 // requires an http server at localhost:8000, started in the directory where filename is found
 // expected file contents:  vizmap = [{selector:"node",css: {...
 function loadStyle(filename)
