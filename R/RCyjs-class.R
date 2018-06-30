@@ -17,8 +17,14 @@
 
 #----------------------------------------------------------------------------------------------------
 # built (cd inst/browserCode; make) with npm and webpack, this html+javascript file has all of the
-# browser-side code
-cyjsBrowserFile <- system.file(package="RCyjs", "browserCode", "dist", "rcyjs.html")
+# browser-side code.  note that the determination of the RCyjs install directory happens
+#  at LOAD time, after the package is built and installed.
+
+cyjsBrowserFile <- NULL
+
+.onLoad <- function(...){
+   cyjsBrowserFile <<- system.file(package="RCyjs", "browserCode", "dist", "rcyjs.html")
+   }
 #----------------------------------------------------------------------------------------------------
 printf <- function(...) print(noquote(sprintf(...)))
 #----------------------------------------------------------------------------------------------------
