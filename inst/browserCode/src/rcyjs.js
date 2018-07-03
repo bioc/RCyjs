@@ -1805,16 +1805,21 @@ function addGraph(msg)
 
   console.log("addGraph '" + filename + "'");
 
-  status = self.addNetwork(filename);
+    var status = self.addNetwork(filename);
+    // todo, pshannon (3 jul 2018)
+    // jquery .loadScript does not return a value
+    // todo: figure out how to handle this.
+  console.log("status returned by self.addNetwork(filename))")
+  console.log(status)
 
   var return_msg;
 
-  if (status=="success") {
+  //if (status=="success") {
      return_msg = {cmd: msg.callback, status: "success", callback: "", payload: ""};
-     }
-  else{
-    return_msg = {cmd: msg.callback, status: "failure", callback: "", payload: status};
-    }
+  //   }
+  //else{
+  //  return_msg = {cmd: msg.callback, status: "failure", callback: "", payload: status};
+  //  }
 
   self.hub.send(return_msg);
 
@@ -2022,7 +2027,7 @@ function addNetwork(filename)
 {
    var self = this;
    var s = window.location.href + "?" + filename;
-   console.log("=== about to getScript on " + s);
+   console.log("=== addNetwork(filename) about to getScript on " + s);
 
    $.getScript(s)
      .done(function(script, textStatus) {
@@ -2035,11 +2040,13 @@ function addNetwork(filename)
          //    console.log(" ---- hiding edges in getScript");
          //   self.cy.edges().style({"display": "none"});
          //   }
+         console.log(" self.cy.add");
          self.cy.add(network.elements);  // no positions yet
-         //console.log("--- edges after: " + self.cy.edges().length);
+         console.log("--- edges after: " + self.cy.edges().length);
          self.cy.nodes().map(function(node){node.data({degree: node.degree()})});
          //cy.edges().style({"display": "none"});  // default hide edges for now
          //cy.elements().qtip(qtipOptions());
+         console.log("getScript in addNetwork(filename) about to return 'success'");
          return("success");
          }) // .done
     .fail(function(jqxhr, settings, exception) {

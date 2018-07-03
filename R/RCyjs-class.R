@@ -326,7 +326,6 @@ setMethod('addGraphFromFile', 'RCyjs',
      while (!browserResponseReady(obj)){
         wait(obj, 100)
         }
-     #printf("browserResponseReady")
      getBrowserResponse(obj);
      })
 

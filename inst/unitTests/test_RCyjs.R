@@ -524,9 +524,10 @@ test_addGraphFromFile <- function()
    addGraph(rcy, g)
    layout(rcy, "cola")
    tbl.nodes.0 <- getNodes(rcy)
-   g <- getJSON(rcy)
+   jsonText <- getJSON(rcy)
+   jsonText.augmented <- sprintf("network = %s", jsonText)
    temp.filename <- tempfile(fileext=".json")
-   write(g, file=temp.filename)
+   write(jsonText.augmented, file=temp.filename)
    deleteGraph(rcy)
    addGraphFromFile(rcy, temp.filename)
    layout(rcy, "cola")
@@ -551,11 +552,13 @@ test_getCounts <- function()
    checkEquals(getNodeCount(rcy), length(nodes(g)))
    checkEquals(getEdgeCount(rcy), length(edgeNames(g)))
 
-   nodesRequested <- 10
-   edgesRequested <- 15
+   nodesRequested <- 300
+   edgesRequested <- 450
    g2 <- createTestGraph(nodeCount=nodesRequested, edgeCount=edgesRequested)
    setGraph(rcy, g2)
    layout(rcy, "cola")
+      # g.json <- getJSON(rcy)
+      # write(g.json, file="~/github/STP/miscellany/cytoscape-promise-experiments/sampleGraph.json")
       # createTestGraph cannot always return as many edges as requested
       # the edge possiblities may be used up before the full complement
       # is achieved.   so only expect as many edges in rcy as there are in R
