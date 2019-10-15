@@ -12,7 +12,7 @@
 
 .RCyjs <- setClass ("RCyjs",
                     representation = representation(graph="graph"),
-                    contains = "BrowserVizClass"
+                    contains = "BrowserViz"
                     )
 
 #----------------------------------------------------------------------------------------------------
