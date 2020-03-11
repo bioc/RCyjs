@@ -282,12 +282,19 @@ setMethod('deleteGraph', 'RCyjs',
 setMethod('addGraph', 'RCyjs',
 
   function (obj, graph) {
-     g.json <- paste("network = ", .graphToJSON(graph))
-     temp.filename <- tempfile(fileext=".json")
-     if(!obj@quiet)
+     graph.class <- class(graph)
+
+     if(graph.class == "graphNEL")
+        g.json.string <- graphNELtoJSON.string(graph)
+     else if(graph.class == "json")
+         g.json.string <- fromJSON(graph)
+
+    g.json.assignmentString <- paste("network = ", g.json.string)
+    temp.filename <- tempfile(fileext=".json")
+    if(!obj@quiet & graph.class == "graphNEL")
         printf("writing graph (%d nodes, %d edges to %s",
                length(nodes(graph)), length(edgeNames(graph)), temp.filename)
-     write(g.json, file=temp.filename)
+     write(g.json.assignmentString, file=temp.filename)
      payload <- list(filename=temp.filename)
      send(obj, list(cmd="addGraph", callback="handleResponse", status="request", payload=payload))
      while (!browserResponseReady(obj)){

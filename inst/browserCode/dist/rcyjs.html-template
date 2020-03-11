@@ -21,6 +21,19 @@ m4_include(bundle.js)
          <button id='cySFNButton' class="cyMenuButton">SFN</button>
          <button id='cyHideUnselectedButton' class="cyMenuButton">Hide Unselected</button>
          <button id='cyShowAllButton' class="cyMenuButton">Show All</button>
+         <label for="layouts">Layout:</label>
+	 <select id="layouts" class="cyMenuButton">
+            <option value="nop"></option>
+            <option value="breadthfirst">breadthfirst</option>
+            <option value="circle">circle</option>
+            <option value="cola">cola</option>
+            <option value="concentric">concentric</option>
+            <option value="cose">cose</option>
+            <option value="cose-bilkent">cose-bilkent</option>
+            <option value="dagre">dagre</option>
+            <option value="grid">grid</option>
+            <option value="random">random</option>
+	 </select>
      </div>
      <div id="cyDiv"></div>
   </div>

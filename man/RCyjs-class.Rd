@@ -7,8 +7,12 @@
 \alias{RCyjs}
 \title{Create an RCyjs object}
 \usage{
-RCyjs(portRange = 16000:16100, title = "RCyjs", graph = graphNEL(),
-  quiet = TRUE)
+RCyjs(
+  portRange = 16000:16100,
+  title = "RCyjs",
+  graph = graphNEL(),
+  quiet = TRUE
+)
 }
 \arguments{
 \item{portRange}{The constructor looks for a free websocket port in this range.  16000:16100 by default}

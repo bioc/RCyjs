@@ -17,6 +17,33 @@ $ = require('jquery');
 require('jquery-ui-bundle');
 var hub = require("browservizjs")  // see https://github.com/paul-shannon/browservizjs
 //----------------------------------------------------------------------------------------------------
+var defaultStyle = [{selector: 'node', css: {
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'content': 'data(id)',
+                        'border-color': 'red',
+                        'background-color': 'white',
+                        'border-width': 1,
+                        'height': 60,
+                        'width': 60
+                        }},
+                     {selector: 'node:selected', css: {
+                        'overlay-color': 'gray',
+                        'overlay-opacity': 0.4,
+                         }},
+                     {selector: 'edge', css: {
+                          'width': '1px',
+                          'line-color': 'black',
+                           'target-arrow-shape': 'triangle',
+                           'target-arrow-color': 'black',
+                           'curve-style': 'bezier'
+                           }},
+                     {selector: 'edge:selected', css: {
+                        'overlay-color': 'gray',
+                        'overlay-opacity': 0.4
+                        }}
+                   ];
+
 var RCyjs = (function(hub){
 
   var cyDiv;
@@ -47,6 +74,13 @@ function initializeMenuButtons(self)
 
    $("#cyHideUnselectedButton").click(function(){self.cy.nodes(":unselected").hide()});
    $("#cyShowAllButton").click(function(){self.cy.nodes().show(); self.cy.edges().show()});
+
+  $("#layouts").change(function(){
+      var strategy = $(this).find("option:selected").text();
+      if(strategy != "nop"){
+         self.cy.layout({name: strategy}).run()
+         }
+      });
 
 } // initializeMenuButtons
 //----------------------------------------------------------------------------------------------------
@@ -1641,24 +1675,6 @@ function getNodeLabel(msg)
 
 } // getNodeLabel
 //----------------------------------------------------------------------------------------------------
-// function addGraph(msg)
-// {
-//    var self = this;
-//    console.log("in function addGraph");
-//    console.log(msg.payload);
-//    graph = JSON.parse(msg.payload.graph);
-//    hideEdges = msg.payload.hideEdges;
-//    console.log("addGraph calling createCytoscapeWindow, assiging cy");
-//    self.cy = self.createCytoscapeWindow(graph, hideEdges)
-//    console.log("setGraph after createCytoscapeWindow, cy assigned");
-//    console.log(self.cy)
-//    //cy.load(graph.elements)
-//    //cy.add(graph)
-//
-//    self.hub.send({cmd: msg.callback, status: "success", callback: "", payload: "got graph"});
-//
-// } // addGraph
-//----------------------------------------------------------------------------------------------------
 function deleteGraph(msg)
 {
    var self = this;
@@ -1796,28 +1812,6 @@ function getSelectedNodes(msg)
 
 } // getSelectedNodes
 //---------------------------------------------------------------------------------------------------
-// function layout(strategy)
-// {
-//    var self = this;
-//    switch(strategy) {
-//       case "random":
-//          var options = {name: 'random',
-//                         fit: true, // whether to fit to viewport
-//                         padding: 30, // fit padding
-//                         boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
-//                         animate: false, // whether to transition the node positions
-//                         animationDuration: 500, // duration of animation in ms if enabled
-//                         ready: undefined, // callback on layoutready
-//                         stop: undefined // callback on layoutstop
-//                         };
-//          self.cy.layout(options);
-//          break;
-//       default:
-//          console.log("unrecognized layout strategy: " + strategy);
-//       } // switch
-//
-// } // layout
-//----------------------------------------------------------------------------------------------------
 function addNode(propsJSON)
 {
    var self = this;
@@ -1971,17 +1965,16 @@ function createCytoscapeWindow()
 
    console.log("--- createCytoscapeWindow")
    var cyElement = $("#cyDiv");
-   //console.log("--- graph");
    console.log(graph);
    var localCy = cytoscape({
        container: cyElement,
-       //elements: graph.elements,
        showOverlay: false,
        minZoom: 0.001,
        maxZoom: 100.0,
        boxSelectionEnabled: true,
+       style:  defaultStyle,
        layout: {
-         name: "preset",
+         name: "cose",
          fit: true
          },
     ready: function() {

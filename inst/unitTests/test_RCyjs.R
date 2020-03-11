@@ -18,8 +18,58 @@ waitForDisplay <- function(msecs)
     wait(rcy, msecs)
 }
 #----------------------------------------------------------------------------------------------------
+testerGraph <- function()
+{
+   g <- new ('graphNEL', edgemode='directed')
+
+   nodeDataDefaults(g, attr='type') <- 'undefined'
+   nodeDataDefaults(g, attr='lfc') <-  1.0
+   nodeDataDefaults(g, attr='label') <- 'default node label'
+   nodeDataDefaults(g, attr='count') <-  0
+
+   edgeDataDefaults(g, attr='edgeType') <- 'undefined'
+   edgeDataDefaults(g, attr='score') <-  0.0
+   edgeDataDefaults(g, attr= 'misc') <- "default misc"
+
+   g <- graph::addNode ('A', g)
+   g <- graph::addNode ('B', g)
+   g <- graph::addNode ('C', g)
+   nodeData (g, 'A', 'type') <- 'kinase'
+   nodeData (g, 'B', 'type') <- 'transcription factor'
+   nodeData (g, 'C', 'type') <- 'glycoprotein'
+
+   nodeData (g, 'A', 'lfc') <- -3.0
+   nodeData (g, 'B', 'lfc') <- 0.0
+   nodeData (g, 'C', 'lfc') <- 3.0
+
+   nodeData (g, 'A', 'count') <- 2
+   nodeData (g, 'B', 'count') <- 30
+   nodeData (g, 'C', 'count') <- 100
+
+   nodeData (g, 'A', 'label') <- 'Gene A'
+   nodeData (g, 'B', 'label') <- 'Gene B'
+   nodeData (g, 'C', 'label') <- 'Gene C'
+
+   g <- graph::addEdge ('A', 'B', g)
+   g <- graph::addEdge ('B', 'C', g)
+   g <- graph::addEdge ('C', 'A', g)
+
+   edgeData (g, 'A', 'B', 'edgeType') <- 'phosphorylates'
+   edgeData (g, 'B', 'C', 'edgeType') <- 'synthetic lethal'
+
+   edgeData (g, 'A', 'B', 'score') <-  35.0
+   edgeData (g, 'B', 'C', 'score') <-  -12
+
+   g
+
+} # demoGraph
+#------------------------------------------------------------------------------------------------------------------------
 runTests <- function()
 {
+   test_addGraph.graphNEL()
+   test_addGraph.json()
+   test_addGraph.dataFrames()
+
    test_setGraph();
    test_deleteSetAddGraph()
    test_largeGraph()
@@ -91,6 +141,52 @@ rcy.demo <- function()
 
 } # rcy.demo
 #----------------------------------------------------------------------------------------------------
+test_addGraph.graphNEL <- function()
+{
+   message(sprintf("--- test_addGraph.graphNEL"))
+
+   g <- testerGraph()
+   addGraph(rcy, g)
+   waitForDisplay(1000)
+   checkEquals(getNodeCount(rcy), 3)
+   checkEquals(getEdgeCount(rcy), 3)
+   waitForDisplay(1000)
+   deleteGraph(rcy)
+
+} # test_addGraph.graphNEL
+#----------------------------------------------------------------------------------------------------
+test_addGraph.json <- function()
+{
+   message(sprintf("--- test_addGraph.graphNEL"))
+   g <- testerGraph()
+   g.json <- toJSON(RCyjs:::graphNELtoJSON.string(g))
+   addGraph(rcy, g.json)
+   checkEquals(getNodeCount(rcy), 3)
+   checkEquals(getEdgeCount(rcy), 3)
+   deleteGraph(rcy)
+
+} # test_addGraph.json
+#----------------------------------------------------------------------------------------------------
+test_addGraph.dataFrames <- function()
+{
+    message(sprintf("--- test_addGraph.graphNEL"))
+   tbl.edges <- data.frame(source=c("A"),
+                           target=c("B"),
+                           interaction=c("eats"),
+                           stringsAsFactors=FALSE)
+
+   tbl.nodes <- data.frame(id=c("A", "B", "C"),
+                           type=c("animal", "vegetable", "mineral"),
+                           age=c("recent", "old", "ancient"),
+                           stringsAsFactors=FALSE)
+   g.json <- toJSON(dataFramesToJSON(tbl.edges, tbl.nodes))
+   addGraph(rcy, g.json)
+   checkEquals(getNodeCount(rcy), 3)
+   checkEquals(getEdgeCount(rcy), 1)
+   deleteGraph(rcy)
+
+} # test_addGraph.dataFrames
+#----------------------------------------------------------------------------------------------------
 test_setGraph <- function()
 {
    printf("--- test_setGraph")
@@ -119,7 +215,6 @@ test_setGraph <- function()
    waitForDisplay(500)
 
 } # test_setGraph
-#----------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------
 test_hideShowNodesByName <- function()
 {
