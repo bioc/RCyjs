@@ -21,3 +21,4 @@ check:
 
 biocCheck:
 	(cd ..; R CMD BiocCheck `ls -t RCyjs_* | head -1`)
+

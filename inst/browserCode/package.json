@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "browservizjs": "github:paul-shannon/browservizjs",
-    "cytoscape": "^3.5.2",
+    "cytoscape": "^3.14.1",
     "cytoscape-cola": "^2.3.0",
     "cytoscape-cose-bilkent": "^4.0.0",
     "cytoscape-dagre": "^2.2.2",

@@ -129,15 +129,22 @@ dataFramesToJSON <- function(tbl.edges, tbl.nodes=NULL)
                               stringsAsFactors=FALSE)
       } # no tbl.nodes supplied
 
+   stopifnot("id" %in% colnames(tbl.nodes))
+   tbl.nodes <- tbl.nodes[order(tbl.nodes$id),]
+
    nodes <- sort(unique(c(tbl.edges$source, tbl.edges$target, tbl.nodes$id)))
 
    edgeCount <- nrow(tbl.edges)
+
+      # allow for plenty of extra character stings in a vector
+      # the vector is trimmed before the string representation is returned
+
    vector.count <- 10 * (edgeCount + length(nodes))
    vec <- vector(mode="character", length=vector.count)
+
    i <- 1;
 
    vec[i] <- '{"elements": {"nodes": ['; i <- i + 1;
-
 
    noa.names <- colnames(tbl.nodes)[-1]
    eda.names <- colnames(tbl.edges)[-(1:2)]

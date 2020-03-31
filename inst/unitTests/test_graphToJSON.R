@@ -32,6 +32,13 @@ runTests <- function()
    test_2000_nodes_2000_edges_no_attributes()
    test_1669_3260()
 
+   test_dataFramesToJSON_edgeTableOnly_noExtraAttributes(display=FALSE)
+   test_dataFramesToJSON_edgeTableOnly_orhpanNodeInNodeTable(display=FALSE)
+   test_dataFramesToJSON_edgeTableOnly_addEdgeAttributes(display=FALSE)
+   test_dataFramesToJSON_explicitNodePositions(display=FALSE)
+
+   test_unorderedNodeIDs()
+
 } # runTests
 #------------------------------------------------------------------------------------------------------------------------
 createTestGraph <- function(nodeCount, edgeCount)
@@ -133,7 +140,7 @@ test_200_nodes_200_edges_no_attributes <- function(display=FALSE)
    tbl.nodes <- g2$elements$nodes
    checkEquals(tbl.nodes$data.id, nodes(g))
    tbl.edges <- g2$elements$edges
-   checkEquals(dim(tbl.edges), c(200, 3))
+   checkEquals(dim(tbl.edges), c(199, 3))
 
  } # test_200_nodes_200_edges_no_attributes
 #------------------------------------------------------------------------------------------------------------------------
@@ -378,3 +385,194 @@ simpleDemoGraph = function ()
 
 } # simpleDemoGraph
 #----------------------------------------------------------------------------------------------------
+test_neo4jMisinterpretedEdges <- function()
+{
+   message(sprintf("--- test_neo4jMisinterpretedEdges"))
+   load("../extdata/neo4jMisinterprtedEdges.RData")
+   tbl <- fromJSON(dataFramesToJSON(tbl.edges, tbl.nodes))
+
+
+} # test_neo4jMisinterpretedEdges
+#----------------------------------------------------------------------------------------------------
+test_dataFramesToJSON_edgeTableOnly_noExtraAttributes <- function(display)
+{
+   message(sprintf("--- test_dataFramesToJSON_edgeTableOnly_noExtraAttributes"))
+
+   tbl.edges <- data.frame(source=c("A"),
+                           target=c("B"),
+                           interaction=c("eats"),
+                           stringsAsFactors=FALSE)
+
+   g.json <- dataFramesToJSON(tbl.edges)
+   x <- fromJSON(g.json)$elements
+   checkEquals(names(x), c("nodes", "edges"))
+
+   tbl.nodes <- x$nodes$data
+   checkEquals(dim(tbl.nodes), c(2, 2))
+   checkEquals(tbl.nodes$id, c("A", "B"))
+
+   tbl.edges <- x$edges$data
+   checkEquals(dim(tbl.edges), c(1, 4))
+   checkEquals(colnames(tbl.edges), c("id", "source", "target", "interaction"))
+   checkEquals(as.character(tbl.edges[1,]), c("A-(eats)-B", "A", "B", "eats"))
+
+   if(display){
+      writeLines(sprintf("network = %s", g.json), "network.js")
+      Sys.sleep(10)
+      browseURL("cyjs-readNetworkFromFile.html")
+      } # display
+
+
+} # test_dataFramesToJSON
+#----------------------------------------------------------------------------------------------------
+test_dataFramesToJSON_edgeTableOnly_orhpanNodeInNodeTable <- function(display)
+{
+   message(sprintf("--- test_dataFramesToJSON_edgeTableOnly_orhpanNodeInNodeTable"))
+
+   tbl.edges <- data.frame(source=c("A"),
+                           target=c("B"),
+                           interaction=c("eats"),
+                           stringsAsFactors=FALSE)
+
+   tbl.nodes <- data.frame(id=c("A", "B", "C"),
+                           type=c("animal", "vegetable", "mineral"),
+                           age=c("recent", "old", "ancient"),
+                           stringsAsFactors=FALSE)
+
+   g.json <- dataFramesToJSON(tbl.edges, tbl.nodes)
+   x <- fromJSON(g.json)$elements
+   checkEquals(names(x), c("nodes", "edges"))
+
+   tbl.nodes <- x$nodes$data
+   checkEquals(dim(tbl.nodes), c(3, 3))
+   checkEquals(tbl.nodes$id, c("A", "B", "C"))
+
+   tbl.edges <- x$edges$data
+   checkEquals(dim(tbl.edges), c(1, 4))
+   checkEquals(colnames(tbl.edges), c("id", "source", "target", "interaction"))
+   checkEquals(as.character(tbl.edges[1,]), c("A-(eats)-B", "A", "B", "eats"))
+
+   if(display){
+      writeLines(sprintf("network = %s", g.json), "network.js")
+      Sys.sleep(10)
+      browseURL("cyjs-readNetworkFromFile.html")
+      } # display
+
+}  # test_dataFramesToJSON_edgeTableOnly_orhpanNodeInNodeTable
+#----------------------------------------------------------------------------------------------------
+test_dataFramesToJSON_edgeTableOnly_addEdgeAttributes <- function(display)
+{
+   message(sprintf("--- test_dataFramesToJSON_edgeTableOnly_orhpanNodeInNodeTable"))
+
+   tbl.edges <- data.frame(source=c("A"),
+                           target=c("B"),
+                           interaction=c("eats"),
+                           duration="long",
+                           intensity=3.2,
+                           stringsAsFactors=FALSE)
+
+   g.json <- dataFramesToJSON(tbl.edges)
+   x <- fromJSON(g.json)$elements
+   checkEquals(names(x), c("nodes", "edges"))
+
+   tbl.nodes <- x$nodes$data
+   checkEquals(dim(tbl.nodes), c(2, 2))
+   checkEquals(tbl.nodes$id, c("A", "B"))
+
+   tbl.edges <- x$edges$data
+   checkEquals(dim(tbl.edges), c(1, 6))
+   checkEquals(colnames(tbl.edges), c("id", "source", "target", "interaction", "duration", "intensity"))
+   checkEquals(tbl.edges[1, "id"], "A-(eats)-B")
+   checkEquals(tbl.edges[1, "source"], "A")
+   checkEquals(tbl.edges[1, "target"], "B")
+   checkEquals(tbl.edges[1, "duration"], "long")
+   checkEquals(tbl.edges[1, "intensity"], 3.2)
+   checkEquals(tbl.edges[1, "interaction"], "eats")
+
+   if(display){
+      writeLines(sprintf("network = %s", g.json), "network.js")
+      Sys.sleep(10)
+      browseURL("cyjs-readNetworkFromFile.html")
+      } # display
+
+}  # test_dataFramesToJSON_edgeTableOnly_addEdgeAttributes
+#----------------------------------------------------------------------------------------------------
+test_dataFramesToJSON_explicitNodePositions <- function(display)
+{
+   message(sprintf("--- test_dataFramesToJSON_explicitNodePositions"))
+
+   tbl.nodes <- data.frame(id=c("A", "B", "C"),
+                           type=c("kinase", "TF", "glycoprotein"),
+                           x=c(0, 100, 200),
+                           y=c(200, 100, 0),
+                           lfc=c(1, 1, 1),
+                           count=c(0, 0, 0),
+                           stringsAsFactors=FALSE)
+
+   tbl.edges <- data.frame(source=c("A", "B", "C"),
+                           target=c("B", "C", "A"),
+                           interaction=c("phosphorylates", "synthetic lethal", "unknown"),
+                           stringsAsFactors=FALSE)
+
+   g.json <- dataFramesToJSON(tbl.edges, tbl.nodes)
+   x <- fromJSON(g.json)$elements
+   checkEquals(names(x), c("nodes", "edges"))
+     # make sure the xPos and yPos were translated into
+     #   "position": {"x": 0.000000, "y": 200.000000}
+     # data members for each node.  this is visible as position.x, position.y colnames
+     # of the fromJSON result just above
+
+   checkTrue(all(c("x", "y") %in% colnames(x$nodes$position)))
+   checkEquals(x$nodes$position$x, c(0, 100, 200))
+   checkEquals(x$nodes$position$y, c(200, 100, 0))
+
+   tbl.nodes <- x$nodes$data
+   checkEquals(dim(tbl.nodes), c(3, 6))
+   checkEquals(tbl.nodes$id, c("A", "B", "C"))
+   checkEquals(colnames(tbl.nodes), c("id", "type", "x", "y", "lfc", "count"))
+
+   tbl.edges <- x$edges$data
+   checkEquals(dim(tbl.edges), c(3, 4))
+   checkEquals(colnames(tbl.edges), c("id", "source", "target", "interaction"))
+   checkEquals(tbl.edges$id, c("A-(phosphorylates)-B", "B-(synthetic lethal)-C", "C-(unknown)-A"))
+
+   if(display){
+      writeLines(sprintf("network = %s", g.json), "network.js")
+      Sys.sleep(10)
+      browseURL("cyjs-readNetworkFromFile.html")
+      } # display
+
+}  # test_dataFramesToJSON_explicitNodePositions
+#----------------------------------------------------------------------------------------------------
+# in early experiments with neo4j, I discovered a bug:  if node ids are not sequentially ordered,
+# they break an assumption of the toJSON function.  this test provides a tbl.nodes unordered by id
+test_unorderedNodeIDs <- function()
+{
+   message(sprintf("--- test_unorderedNodeIDs"))
+
+   tbl.nodes <- data.frame(id=c("8","1","2"), label=c("N8", "N1", "N2"), stringsAsFactors=FALSE)
+   tbl.edges <- data.frame(id=c(34,23), source=c("8", "2"), target=c("1", "8"),
+                           interaction=c("causes", "modifies"), stringsAsFactors=FALSE)
+   x <- fromJSON(dataFramesToJSON(tbl.edges, tbl.nodes), simplifyDataFrame=TRUE)
+   tbl.e <- x$elements$edges
+   tbl.n <- x$elements$nodes
+
+      # fromJSON nests data.frames within the edge and node data.frames
+      # not knowing how to fix that, I accomodate that here, reaching
+      # deeper into the data structure to make comparisons
+
+      # start by checking the out-of-ascending order N8-causes-N1
+
+   checkEquals(as.character(tbl.e[1,1][, c("source", "target", "interaction")]),
+               c("8", "1", "causes"))
+   checkEquals(as.character(tbl.e[2,1][, c("source", "target", "interaction")]),
+               c("2", "8", "modifies"))
+
+   checkEquals(as.character(tbl.n[1,1]), c("1", "N1"))
+   checkEquals(as.character(tbl.n[2,1]), c("2", "N2"))
+   checkEquals(as.character(tbl.n[3,1]), c("8", "N8"))
+
+} # test_unorderedNodeIDs
+#----------------------------------------------------------------------------------------------------
+if(!interactive())
+    runTests()
