@@ -78,7 +78,8 @@ function initializeMenuButtons(self)
   $("#layouts").change(function(){
       var strategy = $(this).find("option:selected").text();
       if(strategy != "nop"){
-         self.cy.layout({name: strategy}).run()
+         var layout = self.cy.layout({name: strategy});
+         layout.run()
          }
       });
 
@@ -770,9 +771,12 @@ function doLayout(msg)
    var self = this;
    console.log("=== doLayout");
    var strategy = msg.payload;
-   self.cy.layout({name: strategy}).run()
-
-   self.hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
+   var layout = self.cy.layout({name: strategy})
+   layout.pon('layoutstop').then(function(event){
+      console.log("layout stop promise fulfilled: " + strategy);
+      self.hub.send({cmd: msg.callback, status: "success", callback: "", payload: ""});
+      });
+   layout.run()
 
 } // doLayout
 //----------------------------------------------------------------------------------------------------
@@ -1556,7 +1560,6 @@ function selectNodes(msg)
      var s = '[id="' + nodeIDs[i] + '"]';
      filterStrings.push(s);
      } // for i
-
 
    var nodesToSelect = self.cy.nodes(filterStrings.join());
    nodesToSelect.select()

@@ -16,6 +16,8 @@ if(interactive()){
 waitForDisplay <- function(msecs)
 {
     wait(rcy, msecs)
+   g <- createTestGraph(nodeCount=10, edgeCount=30)
+
 }
 #----------------------------------------------------------------------------------------------------
 testerGraph <- function()
@@ -66,6 +68,7 @@ testerGraph <- function()
 #------------------------------------------------------------------------------------------------------------------------
 runTests <- function()
 {
+   test_layoutPromises()
    test_addGraph.graphNEL()
    test_addGraph.json()
    test_addGraph.dataFrames()
@@ -140,6 +143,30 @@ rcy.demo <- function()
    rcy
 
 } # rcy.demo
+#----------------------------------------------------------------------------------------------------
+# javascript promises allow commands sent from R to the browser to return
+# only when the browser action is complete.
+# this is what we want, for usability, and especially for programmatic testing
+test_layoutPromises <- function()
+{
+   printf("--- test_layoutPromises")
+
+     #--------------------------------------------------------------
+     # simple test: create a graph, select nodes, request selection
+     # each step should terminate before the next becomes possible
+     #--------------------------------------------------------------
+
+   rcy <- rcy.demo()
+   total.time <- 0
+   for(i in 1:10){
+       strategy <- "cose"
+       if(i %% 2) strategy <- "cola"
+       duration <- system.time(layout(rcy, strategy))
+       total.time <- total.time + duration[["elapsed"]]
+       }
+   checkTrue(total.time > 2)
+
+} # test_layoutPromises
 #----------------------------------------------------------------------------------------------------
 test_addGraph.graphNEL <- function()
 {
