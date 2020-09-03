@@ -283,6 +283,7 @@ setMethod('addGraph', 'RCyjs',
 
   function (obj, graph) {
      graph.class <- class(graph)
+     stopifnot(graph.class %in% c("graphNEL", "json"))
 
      if(graph.class == "graphNEL")
         g.json.string <- graphNELtoJSON.string(graph)
