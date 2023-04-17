@@ -7,8 +7,8 @@
 \usage{
 \S4method{setDefaultEdgeTargetArrowShape}{RCyjs}(
   obj,
-  newValue = c("triangle", "triangle-tee", "triangle-cross", "triangle-backcurve",
-    "vee", "tee", "square", "circle", "diamond", "none")
+  newValue = c("triangle", "triangle-tee", "triangle-cross", "triangle-backcurve", "vee",
+    "tee", "square", "circle", "diamond", "none")
 )
 }
 \arguments{

@@ -163,7 +163,7 @@ setGeneric('hAlign',              signature='obj', function(obj) standardGeneric
 # constructor
 RCyjs = function(portRange=16000:16100, title="RCyjs", graph=graphNEL(), quiet=TRUE)
 {
-   obj <- .RCyjs(BrowserViz(portRange, title, quiet, browserFile=cyjsBrowserFile,
+   obj <- .RCyjs(BrowserViz(host="localhost", portRange, title, quiet, browserFile=cyjsBrowserFile,
                             httpQueryProcessingFunction=myQP),
                  graph=graph)
 

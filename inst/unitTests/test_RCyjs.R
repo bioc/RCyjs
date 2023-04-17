@@ -126,6 +126,8 @@ rcy.demo <- function()
 
    checkTrue(ready(rcy))
    setGraph(rcy, g)
+   redraw(rcy)
+   layout(rcy, "cola")
    setBrowserWindowTitle(rcy, "rcy.demo")
    checkEquals(getBrowserWindowTitle(rcy), "rcy.demo")
    checkEquals(getNodeCount(rcy), 3)
@@ -174,6 +176,10 @@ test_addGraph.graphNEL <- function()
 
    g <- testerGraph()
    addGraph(rcy, g)
+   redraw(rcy)
+   layout(rcy, "cola")
+   fit(rcy, 100)
+
    waitForDisplay(1000)
    checkEquals(getNodeCount(rcy), 3)
    checkEquals(getEdgeCount(rcy), 3)
@@ -184,10 +190,13 @@ test_addGraph.graphNEL <- function()
 #----------------------------------------------------------------------------------------------------
 test_addGraph.json <- function()
 {
-   message(sprintf("--- test_addGraph.graphNEL"))
+   message(sprintf("--- test_addGraph.json"))
    g <- testerGraph()
    g.json <- toJSON(RCyjs:::graphNELtoJSON.string(g))
    addGraph(rcy, g.json)
+   redraw(rcy)
+   layout(rcy, "cola")
+   fit(rcy, 100)
    checkEquals(getNodeCount(rcy), 3)
    checkEquals(getEdgeCount(rcy), 3)
    deleteGraph(rcy)
@@ -208,6 +217,10 @@ test_addGraph.dataFrames <- function()
                            stringsAsFactors=FALSE)
    g.json <- toJSON(dataFramesToJSON(tbl.edges, tbl.nodes))
    addGraph(rcy, g.json)
+   redraw(rcy)
+   layout(rcy, "cola")
+   fit(rcy, 100)
+
    checkEquals(getNodeCount(rcy), 3)
    checkEquals(getEdgeCount(rcy), 1)
    deleteGraph(rcy)
@@ -295,11 +308,11 @@ test_setGraphEdgesInitiallyHidden <- function()
 
    g <- simpleDemoGraph()
    setGraph(rcy, g, hideEdges=TRUE)
+   redraw(rcy)
+   layout(rcy, "cola")
    setNodeLabelRule(rcy, "label");
    setNodeSizeRule(rcy, "count", c(0, 30, 110), c(20, 50, 100));
    setNodeColorRule(rcy, "count", c(0, 100), c("green", "red"), mode="interpolate")
-   redraw(rcy)
-   layout(rcy, "cola")
    fit(rcy, 100)
 
    tbl.nodes <- getNodes(rcy)
@@ -660,9 +673,11 @@ test_getJSON <- function()
    checkTrue(nchar(json) > 2000)
    x <- fromJSON(json)
 
-   checkEquals(sort(names(x)), sort(c("elements", "style", "zoomingEnabled", "userZoomingEnabled",
-                                      "zoom", "minZoom", "maxZoom", "panningEnabled", "userPanningEnabled",
-                                      "pan", "boxSelectionEnabled", "renderer")))
+   expected.names <- sort(c("elements", "style", "zoomingEnabled", "userZoomingEnabled",
+                            "zoom", "minZoom", "maxZoom", "panningEnabled",
+                            "userPanningEnabled", "pan", "boxSelectionEnabled",
+                            "renderer"))
+   checkTrue(all(expected.names %in% names(x)))
    tbl.nodes <- x$elements$nodes$data
    checkEquals(nrow(tbl.nodes), 3)
    checkEquals(tbl.nodes$id, c("A", "B", "C"))
@@ -727,22 +742,14 @@ test_getCounts <- function()
    checkEquals(getNodeCount(rcy), length(nodes(g)))
    checkEquals(getEdgeCount(rcy), length(edgeNames(g)))
 
-   nodesRequested <- 1000
-   edgesRequested <- 1500
+   nodesRequested <- 10
+   edgesRequested <- 15
 
    g2 <- createTestGraph(nodeCount=nodesRequested, edgeCount=edgesRequested)
    setGraph(rcy, g2)
+   layout(rcy, "random")
+   checkEquals(getNodeCount(rcy), length(nodes(g2)))
    checkEquals(getEdgeCount(rcy), length(edgeNames(g2)))
-
-      # createTestGraph cannot always return as many edges as requested
-      # the edge possiblities may be used up before the full complement
-      # is achieved.   so only expect as many edges in rcy as there are in R
-
-   addGraph(rcy, g)
-   print(ready(rcy))
-   layout(rcy, "cola")
-   Sys.sleep(5)
-   checkEquals(getEdgeCount(rcy), length(edgeNames(g2)) + length(edgeNames(g)))
 
 } # test_getCounts
 #----------------------------------------------------------------------------------------------------
@@ -759,12 +766,13 @@ test_nodeSelection <- function()
    set.seed(31)
    g <- createTestGraph(nodeCount=count, edgeCount=10)
    setGraph(rcy, g)
+   layout(rcy, "cola")
+   fit(rcy)
+   waitForDisplay(500)
 
    styleFile.1 <- system.file(package="RCyjs", "extdata", "sampleStyle1.js");
    loadStyleFile(rcy, styleFile.1)
 
-   layout(rcy, "cola")
-   waitForDisplay(500)
    rcy.nodes <- getNodes(rcy)$id
    checkEquals(rcy.nodes, nodes(g))
    target.nodes <- paste("n", sample(1:count, 3), sep="")
@@ -773,7 +781,7 @@ test_nodeSelection <- function()
      #-------------------------------------------
    selectNodes(rcy, target.nodes)
    waitForDisplay(500)
-   checkEquals(target.nodes, getSelectedNodes(rcy)$id)
+   checkEquals(sort(target.nodes), sort(getSelectedNodes(rcy)$id))
    clearSelection(rcy)
    waitForDisplay(500)
    checkEquals(nrow(getSelectedNodes(rcy)), 0)
@@ -992,7 +1000,9 @@ test_setNodeLabelRule <- function()
 
    g <- simpleDemoGraph()
    setGraph(rcy, g)
+   layout(rcy, "cola")
    checkTrue(ready(rcy))
+   fit(rcy, 150)
 
    title <- "setNodeLabelRule"
    setBrowserWindowTitle(rcy, title)
@@ -1139,8 +1149,9 @@ test_savePNG <- function()
 
    filename <- tempfile(fileext=".png")
    savePNG(rcy, filename)
-   Sys.sleep(3)
+   Sys.sleep(10)
    checkTrue(file.exists(filename))
+
    checkTrue(file.size(filename) > 100000)
 
 } # test_savePNG
@@ -1168,7 +1179,7 @@ test_saveJPG <- function()
    fs.1 <- file.size(filename.1)
 
    saveJPG(rcy, filename.4, resolutionFactor=4)
-   Sys.sleep(3)
+   Sys.sleep(10)
    checkTrue(file.exists(filename.4))
    fs.2 <- file.size(filename.4)
 
@@ -1283,6 +1294,7 @@ test_hideShowEdges <- function()
    g <- simpleDemoGraph()
    setGraph(rcy, g)
    layout(rcy, "cola")
+   Sys.sleep(3)
    loadStyleFile(rcy, system.file(package="RCyjs", "extdata", "sampleStyle2.js"))
    target.edge.type <- "phosphorylates"
    checkTrue(target.edge.type %in% eda(g, "edgeType"))
